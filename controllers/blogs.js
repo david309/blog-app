@@ -41,4 +41,29 @@ blogsRouter.post('/', async (request, response, next) => {
 	}
 });
 
+blogsRouter.delete('/', async (request, response, next) => {
+	const body = request.body;
+	const token = request.token;
+
+	try {
+		const decodedToken = jwt.verify(token, process.env.SECRET);
+
+		if (!token || !decodedToken.id) {
+			return response.status(401).json({ error: 'token missing or invalid' });
+		}
+
+		const blog = await Blog.findById(body.id);
+
+		if (blog.user.toString() === decodedToken.id.toString()) {
+			blog.delete();
+		} else {
+			response.status(401).json({ error: 'cannot delete blog you did not create' });
+		}
+
+		response.status(200).json({ blog: 'deleted' });
+	} catch (err) {
+		next(err);
+	}
+});
+
 module.exports = blogsRouter;
