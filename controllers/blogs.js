@@ -13,15 +13,17 @@ blogsRouter.get('/', async (request, response) => {
 blogsRouter.post('/', async (request, response, next) => {
 	const body = request.body;
 	const token = request.token;
+	console.log('token', token);
 
 	try {
 		const decodedToken = jwt.verify(token, process.env.SECRET);
+		console.log('decodedToken', decodedToken);
 
 		if (!token || !decodedToken.id) {
 			return response.status(401).json({ error: 'token missing or invalid' });
 		}
 
-		const user = await User.findById(body.userId);
+		const user = await User.findById(decodedToken.id);
 
 		const blog = new Blog({
 			title: body.title,
@@ -54,13 +56,17 @@ blogsRouter.delete('/', async (request, response, next) => {
 
 		const blog = await Blog.findById(body.id);
 
+		if (!blog) {
+			return response.status(401).json({ error: 'blog does not exist' });
+		}
+
 		if (blog.user.toString() === decodedToken.id.toString()) {
 			blog.delete();
 		} else {
 			response.status(401).json({ error: 'cannot delete blog you did not create' });
 		}
 
-		response.status(200).json({ blog: 'deleted' });
+		response.status(204).end();
 	} catch (err) {
 		next(err);
 	}
