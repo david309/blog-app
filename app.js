@@ -10,7 +10,12 @@ const loginRouter = require('./controllers/login');
 const middleware = require('./utils/middleware');
 
 mongoose
-	.connect(config.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true })
+	.connect(config.MONGODB_URI, {
+		useNewUrlParser: true,
+		useUnifiedTopology: true,
+		useCreateIndex: true,
+		useFindAndModify: false
+	})
 	.then(() => {
 		console.log('connected to MongoDB');
 	})
